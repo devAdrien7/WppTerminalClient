@@ -1,5 +1,3 @@
-const express = require('express')
-const app = express()
 const { startWpp, sendMessage, deleteSession } = require("./wpp");
 const net = require('net')
 const fs = require('fs')
