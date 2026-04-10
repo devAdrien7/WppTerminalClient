@@ -1,38 +1,41 @@
 const express = require('express')
 const app = express()
 const { startWpp, sendMessage, deleteSession } = require("./wpp");
+const net = require('net')
+const fs = require('fs')
 
-let currentQR = ""
-app.use(express.json());
+const SOCKET_PATH = '/tmp/wpp.sock'
 
-app.get('/', (req, res) => {
-  res.send(`
-    <html>
-      <body>
-        <img src="${currentQR}" />
-        <script>
-          setTimeout(() => location.reload(), 2000)
-        </script>
-      </body>
-    </html>
-  `)
-})
+if (fs.existsSync(SOCKET_PATH)) {
+  fs.unlinkSync(SOCKET_PATH)
+}
 
-app.post('/send', async (req, res) => {
-    const { number, text } = req.body;
+let client = null
 
-    const jid = number + "@s.whatsapp.net";
+const server = net.createServer((conn) => {
+  
+  console.log("C++ conectado")
 
-    try {
-        await sendMessage(jid, text);
-        res.send({ status: "ok" });
-    } catch (err) {
-        res.status(500).send({ error: err.message });
+  client = conn
+
+  conn.on('data', async (data) => {
+    const msg = JSON.parse(data.toString())
+    console.log('Recebido', msg)
+    if (msg.type === 'send') {
+      await sendMessage(msg.jid, msg.text)
+      
+      conn.write(JSON.stringify({ type: 'ok' }) + '\n')
+    }else if(msg.type === 'command'){
+      if(msg.instruction === 'start' ){
+        startWpp(client)
+      }
     }
-});
+  })
 
-deleteSession()
-startWpp((qr) => {
-  currentQR = qr
+  conn.on('end', () => {
+    console.log("C++ desconectado")
+    client = null
+  })
 })
-app.listen(3000)
+
+server.listen('/tmp/wpp.sock')

@@ -62,20 +62,20 @@ async function saveCreds(state) {
 }
 
 async function deleteSession(){
-  console.log('Deletando session')
   await keytar.deletePassword(SERVICE, ACCOUNT)
 }
 
-async function startWpp(onQR) {
-  const state = await loadAuthState()
-  //console.log('CREDS CARREGADAS:', !!state.creds?.noiseKey)
-  //const { state, saveCreds } = await useMultiFileAuthState('auth_info')
-  const { fetchLatestBaileysVersion } = require('@whiskeysockets/baileys')
- 
-  console.log(state)
-  const { version } = await fetchLatestBaileysVersion()
+let client = null
+function sendToCpp(obj) {
+  if (!client) return
+  client.write(JSON.stringify(obj) + '\n')
+}
 
-  console.log("Versão WA:", version)
+async function startWpp(conn) {
+  client = conn
+  const state = await loadAuthState()
+  const { fetchLatestBaileysVersion } = require('@whiskeysockets/baileys')
+   const { version } = await fetchLatestBaileysVersion()
 
   sock = makeWASocket({
     auth: state,
@@ -84,7 +84,6 @@ async function startWpp(onQR) {
   })
  
   sock.ev.on('creds.update', async () => {
-    console.log('SALVANDO CREDS')
     await saveCreds(state)
   })
 
@@ -92,17 +91,11 @@ async function startWpp(onQR) {
  
   sock.ev.on('connection.update', async ({ connection, lastDisconnect, qr }) => {
     if (qr) {
-      const qrBase64 = await QRCode.toDataURL(qr)
-
-      if (onQR) {
-        console.log("QR RECEBIDO")
-        onQR(qrBase64)
-      }
+      sendToCpp({type: 'qr',data: qr})
     }
 
     if (connection === 'open') {
       isConnected = true
-      console.log('Conectado ao WhatsApp')
     }
 
     if (connection === 'close') {
@@ -111,14 +104,12 @@ async function startWpp(onQR) {
       const statusCode = lastDisconnect?.error?.output?.statusCode
       const reconectar = statusCode !== DisconnectReason.loggedOut
 
-      console.log('Conexão encerrada. Reconectar:', reconectar)
-
       if (!reconectar) {
         deleteSession()
       }
 
       setTimeout(() => {
-        startWpp(onQR)
+        startWpp(client)
       }, 3000)
     }
   })
@@ -133,14 +124,14 @@ async function startWpp(onQR) {
     const jid = msg.key.remoteJid
     const texto = msg.message.conversation || msg.message.extendedTextMessage?.text
  
-    console.log('Mensagem recebida de:', jid)
-    console.log('Conteúdo:', texto)
+    console.log('Message received from:', jid)
+    console.log('Content:', texto)
   })
 }
 
 async function sendMessage(jid, text){
     if (!isConnected) {
-      throw new Error("Não conectado ao WhatsApp");
+      throw new Error("Not Connected to Wpp");
     }
 
     await sock.sendMessage(jid, {
@@ -151,5 +142,6 @@ async function sendMessage(jid, text){
 module.exports = {
     startWpp,
     sendMessage,
-    deleteSession
+    deleteSession,
+    sendToCpp
 }
