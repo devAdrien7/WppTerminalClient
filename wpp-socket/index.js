@@ -1,4 +1,4 @@
-const { startWpp, sendMessage, deleteSession } = require("./wpp");
+const { startWpp, sendMessage, logout } = require("./wpp");
 const net = require('net')
 const fs = require('fs')
 
@@ -15,7 +15,6 @@ const server = net.createServer((conn) => {
   console.log("C++ conectado")
 
   client = conn
-
   conn.on('data', async (data) => {
     const msg = JSON.parse(data.toString())
     console.log('Recebido', msg)
@@ -26,6 +25,8 @@ const server = net.createServer((conn) => {
     }else if(msg.type === 'command'){
       if(msg.instruction === 'start' ){
         startWpp(client)
+      }else if(msg.instruction === 'logout'){
+        logout();
       }
     }
   })

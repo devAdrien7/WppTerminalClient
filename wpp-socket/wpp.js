@@ -65,6 +65,10 @@ async function deleteSession(){
   await keytar.deletePassword(SERVICE, ACCOUNT)
 }
 
+async function logout(){
+  await sock.logout()
+}
+
 let client = null
 function sendToCpp(obj) {
   if (!client) return
@@ -142,6 +146,6 @@ async function sendMessage(jid, text){
 module.exports = {
     startWpp,
     sendMessage,
-    deleteSession,
+    logout,
     sendToCpp
 }
