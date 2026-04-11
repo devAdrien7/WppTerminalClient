@@ -30,9 +30,37 @@ int main() {
         std::cout << "Node PID: " << pid << std::endl;
         sleep(1);
         service->startWppCommunication();
-        while (running) {
+
+        int opc = 0;
+        std::string number;
+        std::string message;
+        while (running && opc != 9) {
             std::cout << "Running..." << std::endl;
-            sleep(5);
+            std::cout << "1- Mandar Mensagem" << std::endl;
+            std::cout << "2- Sair da Sessão wpp" << std::endl;
+            std::cout << "9- Sair" << std::endl;
+            std::cout << "Qual opc: ";
+            std::cin >> opc;
+            switch(opc){
+                case 1:
+                    std::cout << "Digite o número da pessoa: ";
+                    std::cin >> number;
+
+                    std::cout << "Digite a mensagem: ";
+                    std::cin >> message;
+
+                    number += "@s.whatsapp.net";
+                    service->sendTextMessage(number, message);
+                    break;
+                case 2:
+                    service->sendCommand("logout");
+                    break;
+                case 9:
+                    std::cout << "Saindo..." << std::endl;
+                    break;
+                default:
+                    std::cerr << "Opc Inválida" << std::endl;
+            }
         }
 
         service->kill();

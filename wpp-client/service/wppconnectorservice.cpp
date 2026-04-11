@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <iostream>
+#include <qrencode.h>
 
 WppConnectorService::WppConnectorService() {}
 
@@ -39,11 +40,6 @@ void WppConnectorService::kill()
     close(sock);
 }
 
-void WppConnectorService::createNodeProccess()
-{
-
-}
-
 void WppConnectorService::readWpp()
 {
     char buffer[1024];
@@ -53,6 +49,15 @@ void WppConnectorService::readWpp()
         if (n > 0) {
             buffer[n] = '\0';
             std::cout << "Received: " << buffer << std::endl;
+
+            std::string jsonContent(buffer);
+            json j = json::parse(jsonContent);
+
+            std::string type = j.at("type").get<std::string>();
+            if(type == "qr"){
+                std::string qrCode = j.at("data").get<std::string>();
+                printQR(qrCode);
+            }
         } else if (n == 0) {
             std::cout << "Connection Closed." << std::endl;
             break;
@@ -70,8 +75,38 @@ void WppConnectorService::readWpp()
     std::cout << "Stop Reading" << std::endl;
 }
 
-void WppConnectorService::sendCommand(std::string command)
+void WppConnectorService::printQR(const std::string& text) {
+    QRcode* qr = QRcode_encodeString(text.c_str(), 2, QR_ECLEVEL_L, QR_MODE_8, 1);
+
+    for (int y = 0; y < qr->width; y += 2) {
+        for (int x = 0; x < qr->width; x++) {
+
+            unsigned char top = qr->data[y * qr->width + x];
+            unsigned char bottom =
+                (y + 1 < qr->width) ? qr->data[(y + 1) * qr->width + x] : 0;
+
+            bool t = top & 1;
+            bool b = bottom & 1;
+
+            if (t && b) std::cout << "█";
+            else if (t) std::cout << "▀";
+            else if (b) std::cout << "▄";
+            else std::cout << " ";
+        }
+        std::cout << "\n";
+    }
+
+    QRcode_free(qr);
+}
+
+void WppConnectorService::sendCommand(const std::string& command)
 {
     std::string send = "{\"type\":\"command\",\"instruction\":\"" + command + "\"}\n";
+    write(sock, send.c_str(), send.size());
+}
+
+void WppConnectorService::sendTextMessage(const std::string& jid, const std::string& message)
+{
+    std::string send = "{\"type\":\"send\",\"jid\":\"" + jid + "\",\"text\":\"" + message + "\"}\n";
     write(sock, send.c_str(), send.size());
 }
