@@ -20,8 +20,8 @@ private:
 public:
     Login(Application* app);
     ~Login();
-    void drawView() override;
-    void inactiveView() override;
+    virtual void drawView() override;
+    virtual void inactiveView() override;
     virtual void update(const OBSERVABLE_COMMAND& command, std::vector<std::string>& args) override;
 };
 

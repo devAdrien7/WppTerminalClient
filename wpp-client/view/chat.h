@@ -24,8 +24,8 @@ public:
     Chat();
     ~Chat();
 
-    void drawView() override;
-    void inactiveView() override;
+    virtual void drawView() override;
+    virtual void inactiveView() override;
 };
 
 #endif // CHAT_H

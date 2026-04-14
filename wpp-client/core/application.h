@@ -27,7 +27,7 @@ public:
     Application();
     ~Application();
     void run();
-    void changeCurrentView(ViewType view);
+    void changeCurrentView(const ViewType& view);
 };
 
 #endif // APPLICATION_H

@@ -103,7 +103,7 @@ void Application::changeView()
 }
 
 
-void Application::changeCurrentView(ViewType view)
+void Application::changeCurrentView(const ViewType&  view)
 {
     views[this->currentView]->inactiveView();
     this->currentView = view;

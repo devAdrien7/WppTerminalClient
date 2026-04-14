@@ -5,7 +5,6 @@
 #include <vector>
 #include <algorithm>
 #include <string>
-#include <array>
 #include <sstream>
 #include "OBSERVABLE_COMMAND.h"
 
