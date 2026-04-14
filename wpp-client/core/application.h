@@ -6,6 +6,7 @@
 #include <condition_variable>
 #include "../view/IView.h"
 #include <map>
+#include "ViewType.h"
 
 class Application
 {
@@ -15,10 +16,6 @@ private:
 
     WppConnectorService *service;
 
-    enum ViewType {
-        LOGIN,
-        CHAT
-    };
     ViewType currentView;
     bool newView;
 

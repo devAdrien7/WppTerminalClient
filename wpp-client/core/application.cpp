@@ -10,6 +10,7 @@
 #include "application.h"
 #include "../configuration/signalmanager.h"
 #include "../view/login.h"
+#include "../view/chat.h"
 
 Application::Application()
 {
@@ -37,11 +38,18 @@ void Application::run()
             exit(1);
         }
 
-        int devNull = open("/dev/null", O_WRONLY);
-        if (devNull != -1) {
-            dup2(devNull, STDOUT_FILENO); // stdout
-            dup2(devNull, STDERR_FILENO); // stderr
-            close(devNull);
+        //int devNull = open("/dev/null", O_WRONLY);
+        //if (devNull != -1) {
+        //    dup2(devNull, STDOUT_FILENO);
+        //    dup2(devNull, STDERR_FILENO);
+        //    close(devNull);
+        //}
+
+        int logFd = open("/tmp/wpp-node.log", O_WRONLY | O_CREAT | O_APPEND, 0644);
+        if (logFd != -1) {
+            dup2(logFd, STDOUT_FILENO);
+            dup2(logFd, STDERR_FILENO);
+            close(logFd);
         }
 
         execlp("node", "node", "/home/islaifer/Documentos/Projects/WppTerminal/wpp-socket/index.js", NULL);
@@ -60,17 +68,12 @@ void Application::run()
         currentView = ViewType::LOGIN;
         changeView();
 
-        //attron(COLOR_PAIR(1));
-        //printw("Hello World !!!");
-        //refresh();
-        //getch();
-
         while(SignalManager::running.load()){
             std::unique_lock<std::mutex> lock(mtx);
             cv.wait(lock, [this] { return this->newView || !SignalManager::running.load(); });
 
             if(this->newView){
-
+                changeView();
             }
         }
 
@@ -87,7 +90,11 @@ void Application::loadViews()
 {
     Login* login = new Login(this);
     service->subscribe(login);
+
+    Chat* chat = new Chat();
+
     views[ViewType::LOGIN] = login;
+    views[ViewType::CHAT] = chat;
 }
 
 void Application::changeView()
@@ -101,5 +108,5 @@ void Application::changeCurrentView(ViewType view)
     views[this->currentView]->inactiveView();
     this->currentView = view;
     this->newView = true;
-    cv.notify_one();
+    cv.notify_all();
 }
