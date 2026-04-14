@@ -1,0 +1,10 @@
+#ifndef PRIMARY_KEY_TYPE_H
+#define PRIMARY_KEY_TYPE_H
+
+enum PRIMARY_KEY_TYPE{
+    SEQUENCIAL,
+    INSERTED,
+    COMPOSTE
+};
+
+#endif // PRIMARY_KEY_TYPE_H

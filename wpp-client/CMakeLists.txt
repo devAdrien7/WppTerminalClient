@@ -27,9 +27,14 @@ add_executable(wpp-client main.cpp
     util/OBSERVABLE_COMMAND.h
     util/utilalghoritms.h util/utilalghoritms.cpp
     core/ViewType.h
-    view/chat.h view/chat.cpp)
+    view/chat.h view/chat.cpp
+    configuration/databaseconnection.h configuration/databaseconnection.cpp
+    model/entity/Entity.h
+    model/entity/PRIMARY_KEY_TYPE.h)
 
+find_package(SQLite3 REQUIRED)
 target_link_libraries(wpp-client PRIVATE
+  SQLite3::SQLite3
   nlohmann_json::nlohmann_json
   qrencode
   ncursesw

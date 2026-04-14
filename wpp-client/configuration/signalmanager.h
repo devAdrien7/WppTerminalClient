@@ -6,8 +6,9 @@
 #include <vector>
 
 class SignalManager {
-public:
+private:
     inline static std::vector<std::condition_variable*> runningsCv;
+public:
     static void init();
     static bool isRunning();
     static void registerRuningCv(std::condition_variable* cv);
