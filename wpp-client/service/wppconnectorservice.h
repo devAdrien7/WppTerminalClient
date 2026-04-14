@@ -1,3 +1,4 @@
+#include "../util/Observable.h"
 #include <string>
 #include <vector>
 #include <thread>
@@ -8,7 +9,7 @@
 
 using json = nlohmann::json;
 
-class WppConnectorService
+class WppConnectorService : public Observable
 {
 private:
     volatile bool alive = true;

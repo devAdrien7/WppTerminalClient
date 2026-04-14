@@ -16,12 +16,23 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(wpp-client main.cpp
-    service/wppconnectorservice.h service/wppconnectorservice.cpp)
+    service/wppconnectorservice.h service/wppconnectorservice.cpp
+    configuration/signalmanager.h configuration/signalmanager.cpp
+    core/application.h core/application.cpp
+    view/login.h view/login.cpp
+    view/IView.h
+
+    util/IObserver.h
+    util/Observable.h
+    util/OBSERVABLE_COMMAND.h
+    util/utilalghoritms.h util/utilalghoritms.cpp)
 
 target_link_libraries(wpp-client PRIVATE
   nlohmann_json::nlohmann_json
   qrencode
+  ncursesw
 )
+
 
 
 include(GNUInstallDirs)
