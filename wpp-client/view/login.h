@@ -16,6 +16,7 @@ private:
 
     void printQr(const std::string& qrCode);
     void loadWindows();
+    void loginSuccess();
 public:
     Login(Application* app);
     ~Login();

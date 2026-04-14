@@ -1,7 +1,7 @@
 #include "login.h"
 #include "../util/utilalghoritms.h"
 #include <string>
-//#include <iostream>
+#include "../core/ViewType.h"
 
 Login::Login(Application* app)
 {
@@ -90,24 +90,27 @@ void Login::inactiveView()
 {
     this->isActive = false;
     clear();
+    refresh();
 }
 
 void Login::update(const OBSERVABLE_COMMAND &command, std::vector<std::string> &args)
 {
-    if(!isActive)
+    if (!isActive)
         return;
     switch (command) {
-        case OBSERVABLE_COMMAND::SHOW_QR:
-            if(args.size() > 0)
-                printQr(args[0]);
-            break;
+    case OBSERVABLE_COMMAND::SHOW_QR:
+        if (args.size() > 0)
+            printQr(args[0]);
+        break;
+
+    case OBSERVABLE_COMMAND::LOGIN_SUCCESS:
+        loginSuccess();
+        break;
     }
 }
 
 void Login::printQr(const std::string &qrCode)
 {
-    //std::cout << "Chegou sim" <<std::endl;
-    //attron(COLOR_PAIR(1));
     werase(qrWindow);
     wattron(qrWindow, COLOR_PAIR(1));
     int firstLine = 1;
@@ -130,4 +133,9 @@ void Login::loadWindows()
     int x = (width - 59) / 2;
 
     this->qrWindow = newwin(31, 59, 17, x);
+}
+
+void Login::loginSuccess()
+{
+    app->changeCurrentView(ViewType::CHAT);
 }

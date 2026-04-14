@@ -44,22 +44,43 @@ void WppConnectorService::kill()
 
 void WppConnectorService::readWpp()
 {
-    char buffer[1024];
+    std::string buffer;
+
+    char temp[1024];
+
 
     while (this->alive) {
-        int n = read(this->sock, buffer, sizeof(buffer) - 1);
+        int n = read(this->sock, temp, sizeof(temp) - 1);
+
         if (n > 0) {
-            buffer[n] = '\0';
-            //std::cout << "Received: " << buffer << std::endl;
+            buffer.append(temp, n);
 
-            std::string jsonContent(buffer);
-            json j = json::parse(jsonContent);
+            size_t pos;
+            while ((pos = buffer.find('\n')) != std::string::npos) {
+                std::string message = buffer.substr(0, pos);
+                buffer.erase(0, pos + 1);
 
-            std::string type = j.at("type").get<std::string>();
-            if(type == "qr"){
-                std::string qrCode = j.at("data").get<std::string>();
-                printQR(qrCode);
+                //std::cout << "Received: " << message << std::endl;
+
+                try {
+                    json j = json::parse(message);
+
+                    std::string type = j.at("type");
+
+                    if (type == "qr") {
+                        printQR(j.at("data"));
+                    }
+                    else if (type == "login") {
+                        if (j.at("data") == "SUCCESS") {
+                            notify(OBSERVABLE_COMMAND::LOGIN_SUCCESS, "");
+                        }
+                    }
+
+                } catch (const std::exception& e) {
+                    std::cerr << "JSON inválido: " << e.what() << std::endl;
+                }
             }
+
         } else if (n == 0) {
             std::cout << "Connection Closed." << std::endl;
             break;
