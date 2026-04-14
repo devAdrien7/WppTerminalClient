@@ -84,7 +84,8 @@ async function startWpp(conn) {
   sock = makeWASocket({
     auth: state,
     version,
-    browser: ['Chrome (Linux)', 'Chrome', '120.0.0']
+    browser: ['Chrome (Linux)', 'Chrome', '120.0.0'],
+    syncFullHistory: true
   })
  
   sock.ev.on('creds.update', async () => {
@@ -100,6 +101,7 @@ async function startWpp(conn) {
 
     if (connection === 'open') {
       isConnected = true
+      sendToCpp({type: 'login', data: 'SUCCESS'})
     }
 
     if (connection === 'close') {
@@ -119,18 +121,29 @@ async function startWpp(conn) {
   })
  
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
-    if (type !== 'notify') return
+    for (const msg of messages) {
+        console.log("Mensagem Nova:", msg)
+    }
+    //if (type !== 'notify') return
  
-    const msg = messages[0]
-    if (!msg.message) return
-    if (msg.key.fromMe) return
+    //const msg = messages[0]
+    //console.log('All Message: ', msg)
+    //if (!msg.message) return
+    //if (msg.key.fromMe) return
  
-    const jid = msg.key.remoteJid
-    const texto = msg.message.conversation || msg.message.extendedTextMessage?.text
- 
-    console.log('Message received from:', jid)
-    console.log('Content:', texto)
+    //const jid = msg.key.remoteJid
+    //const texto = msg.message.conversation || msg.message.extendedTextMessage?.text
+
+    //console.log('Message received from:', jid)
+    //console.log('Content:', texto)
   })
+
+  sock.ev.on('messaging-history.set', ({ chats, messages }) => {
+    console.log("Histórico recebido:", messages.length)
+    for (const chat of chats){
+      console.log('Chat historico: ', chat)
+    }
+})
 }
 
 async function sendMessage(jid, text){
