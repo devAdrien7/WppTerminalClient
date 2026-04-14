@@ -12,27 +12,29 @@ let client = null
 
 const server = net.createServer((conn) => {
   
-  console.log("C++ conectado")
+  //console.log("C++ connected")
 
   client = conn
   conn.on('data', async (data) => {
     const msg = JSON.parse(data.toString())
-    console.log('Recebido', msg)
+    //console.log('Received', msg)
     if (msg.type === 'send') {
       await sendMessage(msg.jid, msg.text)
-      
       conn.write(JSON.stringify({ type: 'ok' }) + '\n')
+
     }else if(msg.type === 'command'){
+
       if(msg.instruction === 'start' ){
         startWpp(client)
       }else if(msg.instruction === 'logout'){
         logout();
       }
+
     }
   })
 
   conn.on('end', () => {
-    console.log("C++ desconectado")
+    //console.log("C++ connected")
     client = null
   })
 })
