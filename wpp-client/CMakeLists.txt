@@ -25,7 +25,9 @@ add_executable(wpp-client main.cpp
     util/IObserver.h
     util/Observable.h
     util/OBSERVABLE_COMMAND.h
-    util/utilalghoritms.h util/utilalghoritms.cpp)
+    util/utilalghoritms.h util/utilalghoritms.cpp
+    core/ViewType.h
+    view/chat.h view/chat.cpp)
 
 target_link_libraries(wpp-client PRIVATE
   nlohmann_json::nlohmann_json
