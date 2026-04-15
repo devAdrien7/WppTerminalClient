@@ -12,3 +12,22 @@ std::vector<std::string> UtilAlghoritms::split(const std::string& str, char deli
 
     return tokens;
 }
+
+bool UtilAlghoritms::isLong(const std::string& str, long& value) {
+    try {
+        size_t pos;
+        value = std::stol(str, &pos);
+
+        return pos == str.size();
+    } catch (...) {
+        return false;
+    }
+}
+
+std::string UtilAlghoritms::boolToString(bool value) {
+    return value ? "true" : "false";
+}
+
+bool UtilAlghoritms::stringToBoolean(const std::string& s) {
+    return s == "true" || s == "1";
+}

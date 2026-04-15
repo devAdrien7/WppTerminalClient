@@ -30,7 +30,12 @@ add_executable(wpp-client main.cpp
     view/chat.h view/chat.cpp
     configuration/databaseconnection.h configuration/databaseconnection.cpp
     model/entity/Entity.h
-    model/entity/PRIMARY_KEY_TYPE.h)
+    model/entity/PRIMARY_KEY_TYPE.h
+    model/entity/contact.h model/entity/contact.cpp
+    model/entity/group.h model/entity/group.cpp
+    model/entity/message.h model/entity/message.cpp
+    model/entity/MESSAGE_TYPE.h
+    model/entity/conversation.h model/entity/conversation.cpp)
 
 find_package(SQLite3 REQUIRED)
 target_link_libraries(wpp-client PRIVATE
