@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <ncurses.h>
 #include <locale.h>
+#include <pwd.h>
 #include "application.h"
 #include "../configuration/signalmanager.h"
 #include "../view/login.h"
@@ -31,6 +32,8 @@ void Application::run()
     loadViews();
     pid_t pid = fork();
 
+    struct passwd* pw = getpwuid(getuid());
+
     if (pid == 0) {
         prctl(PR_SET_PDEATHSIG, SIGTERM);
 
@@ -52,7 +55,10 @@ void Application::run()
             close(logFd);
         }
 
-        execlp("node", "node", "/home/islaifer/Documentos/Projects/WppTerminal/wpp-socket/index.js", NULL);
+        //Melhorar mais depois
+        std::string nodePath = std::string(pw->pw_dir) + "/Documentos/Projects/WppTerminal/wpp-socket/index.js";
+
+        execlp("node", "node", nodePath.c_str(), NULL);
 
         perror("Error when starting node...");
     } else if (pid > 0) {
