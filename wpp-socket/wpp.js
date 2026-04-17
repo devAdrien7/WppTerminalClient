@@ -124,26 +124,29 @@ async function startWpp(conn) {
     for (const msg of messages) {
         console.log("Mensagem Nova:", msg)
     }
-    //if (type !== 'notify') return
- 
-    //const msg = messages[0]
-    //console.log('All Message: ', msg)
-    //if (!msg.message) return
-    //if (msg.key.fromMe) return
- 
-    //const jid = msg.key.remoteJid
-    //const texto = msg.message.conversation || msg.message.extendedTextMessage?.text
-
-    //console.log('Message received from:', jid)
-    //console.log('Content:', texto)
   })
 
-  sock.ev.on('messaging-history.set', ({ chats, messages }) => {
-    console.log("Histórico recebido:", messages.length)
-    for (const chat of chats){
-      console.log('Chat historico: ', chat)
+  sock.ev.on('messaging-history.set', ({ chats, messages, contacts }) => {
+    const chatsSerialized = []
+    const messagesSerialized = []
+    const contactsSerialized = []
+
+    for(const chat of chats){
+      chatsSerialized.push({id: chat.id, isArchived: CharacterData.archived })
     }
-})
+
+    for(const message of messages){
+      messagesSerialized.push({ id: message.key?.id || '', contactId: message.key?.remoteJid || '', message: message.message?.conversation || '' })
+    }
+
+    for(const contact of contacts){
+      contactsSerialized.push({ id: contact.id, name: contact.name, phone: contact.phoneNumber  })
+    }
+
+    sendToCpp({type: 'Chats', data: chatsSerialized})
+    sendToCpp({type: 'HistoricMessages', data: messagesSerialized})
+    sendToCpp({type: 'Contacts', data: contactsSerialized})
+  })
 }
 
 async function sendMessage(jid, text){

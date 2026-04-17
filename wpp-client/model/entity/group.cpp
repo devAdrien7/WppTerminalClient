@@ -1,6 +1,5 @@
 #include "group.h"
 #include "../../util/utilalghoritms.h"
-#include <stdexcept>
 #include <algorithm>
 
 Group::Group() {}
@@ -14,49 +13,45 @@ std::string Group::getTableName()
 
 std::string Group::getPrimaryKey()
 {
-    return std::to_string(id);
+    return id;
 }
 
 void Group::setPrimaryKey(std::string id)
 {
-    long newId;
-    if(UtilAlghoritms::isLong(id, newId)){
-        this->id = newId;
-    }else{
-        std::runtime_error("Id needs to be long");
-    }
+    this->id = id;
 }
 
 PRIMARY_KEY_TYPE Group::getPrimaryKeyType()
 {
-    return PRIMARY_KEY_TYPE::SEQUENCIAL;
+    return PRIMARY_KEY_TYPE::INSERTED;
 }
 
 std::vector<std::string> Group::getAttributes()
 {
-    return { "id", "name", "group_pic" };
+    return { "id", "name", "group_pic", "archived" };
 }
 
 std::vector<std::string> Group::getAttributesWithoutId()
 {
-    return { "name", "group_pic" };
+    return { "name", "group_pic", "archived" };
 }
 
 std::map<std::string, std::string> Group::getAttributesAndValues()
 {
     return {
-        {"id", std::to_string(id)},
+        {"id", id},
         {"name", name},
-        {"group_pic", groupPic}
+        {"group_pic", groupPic},
+        {"archived", UtilAlghoritms::boolToString(archived)},
     };
 }
 
 std::map<std::string, std::string> Group::getAttributesAndValuesWithoutId()
 {
     return {
-        {"id", std::to_string(id)},
         {"name", name},
-        {"group_pic", groupPic}
+        {"group_pic", groupPic},
+        {"archived", UtilAlghoritms::boolToString(archived)},
     };
 }
 
@@ -85,6 +80,16 @@ std::string Group::getGroupPic()
 void Group::setGroupPic(std::string groupPic)
 {
     this->groupPic = groupPic;
+}
+
+bool Group::isArchived()
+{
+    return archived;
+}
+
+void Group::setArchived(bool archived)
+{
+    this->archived = archived;
 }
 
 std::vector<Contact *> Group::getMembers()

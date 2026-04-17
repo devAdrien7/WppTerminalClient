@@ -8,9 +8,10 @@
 class Group : public Entity
 {
 private:
-    long id;
+    std::string id;
     std::string name;
     std::string groupPic;
+    bool archived;
     std::vector<Contact*> members;
 public:
     Group();
@@ -31,6 +32,9 @@ public:
 
     std::string getGroupPic();
     void setGroupPic(std::string groupPic);
+
+    bool isArchived();
+    void setArchived(bool archived);
 
     std::vector<Contact*> getMembers();
     void insertNewMember(Contact* contact);

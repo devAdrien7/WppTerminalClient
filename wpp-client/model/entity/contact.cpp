@@ -1,6 +1,4 @@
 #include "contact.h"
-#include "../../util/utilalghoritms.h"
-#include <stdexcept>
 
 Contact::Contact() {}
 
@@ -13,22 +11,17 @@ std::string Contact::getTableName()
 
 std::string Contact::getPrimaryKey()
 {
-    return std::to_string(id);
+    return id;
 }
 
 void Contact::setPrimaryKey(std::string id)
 {
-    long newId;
-    if(UtilAlghoritms::isLong(id, newId)){
-        this->id = newId;
-    }else{
-        std::runtime_error("Id needs to be long");
-    }
+    this->id = id;
 }
 
 PRIMARY_KEY_TYPE Contact::getPrimaryKeyType()
 {
-    return PRIMARY_KEY_TYPE::SEQUENCIAL;
+    return PRIMARY_KEY_TYPE::INSERTED;
 }
 
 std::vector<std::string> Contact::getAttributes()
@@ -44,7 +37,7 @@ std::vector<std::string> Contact::getAttributesWithoutId()
 std::map<std::string, std::string> Contact::getAttributesAndValues()
 {
     return {
-        {"id", std::to_string(id)},
+        {"id", id},
         {"name", name},
         {"profile_pic", profilePic}
     };

@@ -6,7 +6,7 @@
 class Contact : public Entity
 {
 private:
-    long id;
+    std::string id;
     std::string name;
     std::string profilePic;
 public:

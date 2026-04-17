@@ -7,9 +7,10 @@
 class Conversation : public Entity
 {
 private:
-    long id;
+    std::string id;
     long originId;
     long targetId;
+    bool archived;
     time_t lastMessageDate;
 public:
     Conversation();
@@ -30,6 +31,9 @@ public:
 
     long getTargetId();
     void setTargetId(long targetId);
+
+    bool isArchived();
+    void setArchived(bool archived);
 
     time_t getLastMessageDate();
     void setLastMessageDate(time_t date);

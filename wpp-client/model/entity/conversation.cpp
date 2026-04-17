@@ -13,40 +13,36 @@ std::string Conversation::getTableName()
 
 std::string Conversation::getPrimaryKey()
 {
-    return std::to_string(id);
+    return id;
 }
 
 void Conversation::setPrimaryKey(std::string id)
 {
-    long newId;
-    if(UtilAlghoritms::isLong(id, newId)){
-        this->id = newId;
-    }else{
-        std::runtime_error("Id needs to be long");
-    }
+    this->id = id;
 }
 
 PRIMARY_KEY_TYPE Conversation::getPrimaryKeyType()
 {
-    return PRIMARY_KEY_TYPE::SEQUENCIAL;
+    return PRIMARY_KEY_TYPE::INSERTED;
 }
 
 std::vector<std::string> Conversation::getAttributes()
 {
-    return { "id", "origin_id", "target_id", "last_message_date" };
+    return { "id", "origin_id", "target_id", "archived", "last_message_date" };
 }
 
 std::vector<std::string> Conversation::getAttributesWithoutId()
 {
-    return { "origin_id", "target_id", "last_message_date" };
+    return { "origin_id", "target_id", "archived", "last_message_date" };
 }
 
 std::map<std::string, std::string> Conversation::getAttributesAndValues()
 {
     return {
-        {"id", std::to_string(id)},
+        {"id", id},
         {"origin_id", std::to_string(originId)},
         {"target_id", std::to_string(targetId)},
+        {"archived", UtilAlghoritms::boolToString(archived)},
         {"last_message_date", std::to_string(lastMessageDate)},
     };
 }
@@ -56,6 +52,7 @@ std::map<std::string, std::string> Conversation::getAttributesAndValuesWithoutId
     return {
         {"origin_id", std::to_string(originId)},
         {"target_id", std::to_string(targetId)},
+        {"archived", UtilAlghoritms::boolToString(archived)},
         {"last_message_date", std::to_string(lastMessageDate)},
     };
 }
@@ -93,6 +90,16 @@ long Conversation::getTargetId()
 void Conversation::setTargetId(long targetId)
 {
     this->targetId = targetId;
+}
+
+bool Conversation::isArchived()
+{
+    return archived;
+}
+
+void Conversation::setArchived(bool archived)
+{
+    this->archived = archived;
 }
 
 time_t Conversation::getLastMessageDate()
