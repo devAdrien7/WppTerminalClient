@@ -25,6 +25,7 @@ private:
     ~DatabaseConnection();
 
     long getNextId(const std::string& table);
+    void incrementId(long actualId, const std::string& table);
     std::string buildQuerySQL(const OPERATION& operation,const std::string& table, const std::map<std::string, std::string>& data);
 public:
     static DatabaseConnection* getInstance();

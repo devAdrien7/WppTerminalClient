@@ -123,9 +123,11 @@ void DatabaseConnection::insert(Entity *entity)
     PRIMARY_KEY_TYPE primaryKeyType = entity->getPrimaryKeyType();
 
     std::unique_lock<std::mutex> lock(mutex);
+
+    long sequencialId = 0;
     if(primaryKeyType == PRIMARY_KEY_TYPE::SEQUENCIAL){
-        long id = getNextId(table);
-        entity->setPrimaryKey(std::to_string(id));
+        sequencialId = getNextId(table);
+        entity->setPrimaryKey(std::to_string(sequencialId));
     }
 
     std::string primaryKey = entity->getPrimaryKey();
@@ -144,6 +146,10 @@ void DatabaseConnection::insert(Entity *entity)
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+    if(primaryKeyType == PRIMARY_KEY_TYPE::SEQUENCIAL){
+        incrementId(sequencialId, table);
+    }
     lock.unlock();
 }
 
@@ -154,18 +160,25 @@ void DatabaseConnection::bashInsert(const std::vector<Entity *>& entities)
 
     sqlite3_stmt* stmt;
     bool first = true;
+    long sequencialId = 0;
+    PRIMARY_KEY_TYPE primaryKeyType;
+    std::string table;
     for(const auto& entity: entities){
         if(!first){
             sqlite3_reset(stmt);
             sqlite3_clear_bindings(stmt);
         }
 
-        std::string table = entity->getTableName();
-        PRIMARY_KEY_TYPE primaryKeyType = entity->getPrimaryKeyType();
+        table = entity->getTableName();
+        primaryKeyType = entity->getPrimaryKeyType();
 
         if(primaryKeyType == PRIMARY_KEY_TYPE::SEQUENCIAL){
-            long id = getNextId(table);
-            entity->setPrimaryKey(std::to_string(id));
+            if(sequencialId == 0){
+                sequencialId = getNextId(table);
+            }else{
+                sequencialId++;
+            }
+            entity->setPrimaryKey(std::to_string(sequencialId));
         }
 
         std::string primaryKey = entity->getPrimaryKey();
@@ -186,6 +199,9 @@ void DatabaseConnection::bashInsert(const std::vector<Entity *>& entities)
     }
     sqlite3_finalize(stmt);
 
+    if(primaryKeyType == PRIMARY_KEY_TYPE::SEQUENCIAL){
+        incrementId(sequencialId, table);
+    }
     sqlite3_exec(db, "COMMIT;", nullptr, nullptr, nullptr);
     lock.unlock();
 }
@@ -261,11 +277,10 @@ void DatabaseConnection::deleteEntity(Entity *entity)
 long DatabaseConnection::getNextId(const std::string& table)
 {
     long result = 1;
-    std::stringstream sql;
-    sql << "SELECT * FROM next_id WHERE table_name = ?";
+    std::string sql = "SELECT * FROM next_id WHERE table_name = ?";
 
     sqlite3_stmt* stmt;
-    sqlite3_prepare_v2(db, sql.str().c_str(), -1, &stmt, nullptr);
+    sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
 
     sqlite3_bind_text(stmt, 1, table.c_str(), -1, SQLITE_TRANSIENT);
 
@@ -274,6 +289,20 @@ long DatabaseConnection::getNextId(const std::string& table)
     }
 
     return result;
+}
+
+void DatabaseConnection::incrementId(long actualId, const std::string &table)
+{
+    actualId++;
+    std::string sql = "UPDATE next_id SET n_id = ? WHERE table_name = ?";
+    sqlite3_stmt* stmt;
+
+    sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
+    sqlite3_bind_text(stmt, 1, std::to_string(actualId).c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, table.c_str(), -1, SQLITE_TRANSIENT);
+
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
 }
 
 std::string DatabaseConnection::buildQuerySQL(const OPERATION& operation, const std::string& table, const std::map<std::string, std::string>& data) {
