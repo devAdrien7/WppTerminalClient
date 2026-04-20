@@ -50,9 +50,8 @@ std::vector<T*> DatabaseConnection::getAll(const std::string& table)
     std::stringstream sql;
     sql << "SELECT * FROM " << table;
 
+    std::unique_lock<std::mutex> lock(mutex);
     sqlite3_prepare_v2(db, sql.str().c_str(), -1, &stmt, nullptr);
-
-
 
     T* tmp = new T();
     std::vector<std::string> columns = tmp->getAttributes();
@@ -73,6 +72,7 @@ std::vector<T*> DatabaseConnection::getAll(const std::string& table)
     }
 
     sqlite3_finalize(stmt);
+    lock.unlock();
 
     return result;
 }
@@ -86,6 +86,7 @@ std::vector<T*> DatabaseConnection::getSearch(const std::string& table, const st
     sqlite3_stmt* stmt;
     std::string sql = buildQuerySQL(OPERATION::SELECT, table, search);
 
+    std::unique_lock<std::mutex> lock(mutex);
     sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
 
     int index = 1;
@@ -111,6 +112,7 @@ std::vector<T*> DatabaseConnection::getSearch(const std::string& table, const st
     }
 
     sqlite3_finalize(stmt);
+    lock.unlock();
 
     return result;
 }
@@ -120,6 +122,7 @@ void DatabaseConnection::insert(Entity *entity)
     std::string table = entity->getTableName();
     PRIMARY_KEY_TYPE primaryKeyType = entity->getPrimaryKeyType();
 
+    std::unique_lock<std::mutex> lock(mutex);
     if(primaryKeyType == PRIMARY_KEY_TYPE::SEQUENCIAL){
         long id = getNextId(table);
         entity->setPrimaryKey(std::to_string(id));
@@ -141,10 +144,12 @@ void DatabaseConnection::insert(Entity *entity)
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    lock.unlock();
 }
 
 void DatabaseConnection::bashInsert(const std::vector<Entity *>& entities)
 {
+    std::unique_lock<std::mutex> lock(mutex);
     sqlite3_exec(db, "BEGIN TRANSACTION;", nullptr, nullptr, nullptr);
 
     sqlite3_stmt* stmt;
@@ -182,6 +187,7 @@ void DatabaseConnection::bashInsert(const std::vector<Entity *>& entities)
     sqlite3_finalize(stmt);
 
     sqlite3_exec(db, "COMMIT;", nullptr, nullptr, nullptr);
+    lock.unlock();
 }
 
 void DatabaseConnection::update(Entity *entity, const std::map<std::string, std::string>& search)
@@ -213,6 +219,7 @@ void DatabaseConnection::update(Entity *entity, const std::map<std::string, std:
 
     sqlite3_stmt* stmt;
 
+    std::unique_lock<std::mutex> lock(mutex);
     sqlite3_prepare_v2(db, sql.str().c_str(), -1, &stmt, nullptr);
 
     int index = 1;
@@ -226,6 +233,7 @@ void DatabaseConnection::update(Entity *entity, const std::map<std::string, std:
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    lock.unlock();
 }
 
 void DatabaseConnection::deleteEntity(Entity *entity)
@@ -237,6 +245,7 @@ void DatabaseConnection::deleteEntity(Entity *entity)
 
     sqlite3_stmt* stmt;
 
+    std::unique_lock<std::mutex> lock(mutex);
     sqlite3_prepare_v2(db, sql.c_str(), -1, &stmt, nullptr);
 
     int index = 1;
@@ -246,13 +255,14 @@ void DatabaseConnection::deleteEntity(Entity *entity)
 
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    lock.unlock();
 }
 
 long DatabaseConnection::getNextId(const std::string& table)
 {
     long result = 1;
     std::stringstream sql;
-    sql << "SELECT * FROM next_id WHERE column_name = ?";
+    sql << "SELECT * FROM next_id WHERE table_name = ?";
 
     sqlite3_stmt* stmt;
     sqlite3_prepare_v2(db, sql.str().c_str(), -1, &stmt, nullptr);

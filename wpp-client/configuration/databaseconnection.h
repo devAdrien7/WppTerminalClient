@@ -4,12 +4,14 @@
 #include <vector>
 #include <map>
 #include <sqlite3.h>
+#include <mutex>
 #include "../model/entity/Entity.h"
 
 class DatabaseConnection
 {
 private:
     inline static DatabaseConnection* INSTANCE = nullptr;
+    std::mutex mutex;
 
     enum OPERATION{
         SELECT,

@@ -1,9 +1,6 @@
 #include "configuration/signalmanager.h"
 #include "core/application.h"
 
-#include <csignal>
-
-volatile sig_atomic_t running = 1;
 Application* app;
 
 int main() {
