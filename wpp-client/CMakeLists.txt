@@ -35,7 +35,11 @@ add_executable(wpp-client main.cpp
     model/entity/group.h model/entity/group.cpp
     model/entity/message.h model/entity/message.cpp
     model/entity/MESSAGE_TYPE.h
-    model/entity/conversation.h model/entity/conversation.cpp)
+    model/entity/conversation.h model/entity/conversation.cpp
+    repository/contactrepository.h repository/contactrepository.cpp
+    repository/conversationrepository.h repository/conversationrepository.cpp
+    repository/grouprepository.h repository/grouprepository.cpp
+    repository/messagerepository.h repository/messagerepository.cpp)
 
 find_package(SQLite3 REQUIRED)
 target_link_libraries(wpp-client PRIVATE
