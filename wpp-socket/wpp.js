@@ -131,21 +131,51 @@ async function startWpp(conn) {
     const messagesSerialized = []
     const contactsSerialized = []
 
-    for(const chat of chats){
-      chatsSerialized.push({id: chat.id, isArchived: CharacterData.archived })
+    for (const chat of chats) {
+      let participants = []
+      let isGroup = false
+
+      if (chat.id?.endsWith('@s.whatsapp.net')) {
+        participants = [chat.id]
+      }
+      else if (chat.id?.endsWith('@g.us')) {
+        isGroup = true
+        participants =
+          (chat.participants || [])
+            .map(p => p.id || p.participant || '')
+            .filter(Boolean)
+      }
+
+      chatsSerialized.push({
+        id: chat.id,
+        isArchived: chat.archived,
+        participants,
+        isGroup
+      })
     }
 
-    for(const message of messages){
-      messagesSerialized.push({ id: message.key?.id || '', contactId: message.key?.remoteJid || '', message: message.message?.conversation || '' })
+    for (const message of messages) {
+      messagesSerialized.push({
+        id: message.key?.id || '',
+        contactId: message.key?.remoteJid || '',
+        message:
+          message.message?.conversation ||
+          message.message?.extendedTextMessage?.text ||
+          ''
+      })
     }
 
-    for(const contact of contacts){
-      contactsSerialized.push({ id: contact.id, name: contact.name, phone: contact.phoneNumber  })
+    for (const contact of contacts) {
+      contactsSerialized.push({
+        id: contact.id,
+        name: contact.name,
+        phone: contact.phoneNumber
+      })
     }
 
-    sendToCpp({type: 'Chats', data: chatsSerialized})
-    sendToCpp({type: 'HistoricMessages', data: messagesSerialized})
-    sendToCpp({type: 'Contacts', data: contactsSerialized})
+    sendToCpp({ type: 'chats', data: chatsSerialized })
+    sendToCpp({ type: 'historic_messages', data: messagesSerialized })
+    sendToCpp({ type: 'contacts', data: contactsSerialized })
   })
 }
 

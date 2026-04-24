@@ -1,20 +1,21 @@
-#ifndef CONVERSATION_H
-#define CONVERSATION_H
+#ifndef GROUP_H
+#define GROUP_H
 
 #include "Entity.h"
-#include <ctime>
+#include "contact.h"
 
-class Conversation : public Entity
+
+class Group : public Entity
 {
 private:
     std::string id;
-    long originId;
-    long targetId;
+    std::string name;
+    std::string groupPic;
     bool archived;
-    time_t lastMessageDate;
+    std::vector<Contact*> members;
 public:
-    Conversation();
-    ~Conversation();
+    Group();
+    ~Group();
 
     std::string getTableName() override;
     std::string getPrimaryKey() override;
@@ -26,17 +27,18 @@ public:
     std::map<std::string, std::string> getAttributesAndValuesWithoutId() override;
     void fillAttributes(const std::map<std::string, std::string> &sqlValues) override;
 
-    long getOriginId();
-    void setOriginId(long originId);
+    std::string getName();
+    void setName(std::string name);
 
-    long getTargetId();
-    void setTargetId(long targetId);
+    std::string getGroupPic();
+    void setGroupPic(std::string groupPic);
 
     bool isArchived();
     void setArchived(bool archived);
 
-    time_t getLastMessageDate();
-    void setLastMessageDate(time_t date);
+    std::vector<Contact*> getMembers();
+    void insertNewMember(Contact* contact);
+    void deleteMember(Contact* contact);
 };
 
-#endif // CONVERSATION_H
+#endif // GROUP_H

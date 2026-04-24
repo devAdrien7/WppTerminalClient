@@ -1,113 +1,111 @@
-#include "conversation.h"
+#include "group.h"
 #include "../../util/utilalghoritms.h"
-#include <stdexcept>
+#include <algorithm>
 
-Conversation::Conversation() {}
+Group::Group() {}
 
-Conversation::~Conversation() {}
+Group::~Group() {}
 
-std::string Conversation::getTableName()
+std::string Group::getTableName()
 {
-    return "conversations";
+    return "groups";
 }
 
-std::string Conversation::getPrimaryKey()
+std::string Group::getPrimaryKey()
 {
     return id;
 }
 
-void Conversation::setPrimaryKey(std::string id)
+void Group::setPrimaryKey(std::string id)
 {
     this->id = id;
 }
 
-PRIMARY_KEY_TYPE Conversation::getPrimaryKeyType()
+PRIMARY_KEY_TYPE Group::getPrimaryKeyType()
 {
     return PRIMARY_KEY_TYPE::INSERTED;
 }
 
-std::vector<std::string> Conversation::getAttributes()
+std::vector<std::string> Group::getAttributes()
 {
-    return { "id", "origin_id", "target_id", "archived", "last_message_date" };
+    return { "id", "name", "group_pic", "archived" };
 }
 
-std::vector<std::string> Conversation::getAttributesWithoutId()
+std::vector<std::string> Group::getAttributesWithoutId()
 {
-    return { "origin_id", "target_id", "archived", "last_message_date" };
+    return { "name", "group_pic", "archived" };
 }
 
-std::map<std::string, std::string> Conversation::getAttributesAndValues()
+std::map<std::string, std::string> Group::getAttributesAndValues()
 {
     return {
         {"id", id},
-        {"origin_id", std::to_string(originId)},
-        {"target_id", std::to_string(targetId)},
+        {"name", name},
+        {"group_pic", groupPic},
         {"archived", UtilAlghoritms::boolToString(archived)},
-        {"last_message_date", std::to_string(lastMessageDate)},
     };
 }
 
-std::map<std::string, std::string> Conversation::getAttributesAndValuesWithoutId()
+std::map<std::string, std::string> Group::getAttributesAndValuesWithoutId()
 {
     return {
-        {"origin_id", std::to_string(originId)},
-        {"target_id", std::to_string(targetId)},
+        {"name", name},
+        {"group_pic", groupPic},
         {"archived", UtilAlghoritms::boolToString(archived)},
-        {"last_message_date", std::to_string(lastMessageDate)},
     };
 }
 
-void Conversation::fillAttributes(const std::map<std::string, std::string> &sqlValues)
+void Group::fillAttributes(const std::map<std::string, std::string> &sqlValues)
 {
     setPrimaryKey(sqlValues.at("id"));
-
-    if(!UtilAlghoritms::isLong(sqlValues.at("origin_id"), originId)){
-        std::runtime_error("originId needs to be long");
-    }
-
-    if(!UtilAlghoritms::isLong(sqlValues.at("target_id"), targetId)){
-        std::runtime_error("targetId needs to be long");
-    }
-
-    lastMessageDate = static_cast<time_t>(std::stol(sqlValues.at("last_message_date")));
+    name = sqlValues.at("name");
+    groupPic = sqlValues.at("group_pic");
 }
 
-long Conversation::getOriginId()
+std::string Group::getName()
 {
-    return originId;
+    return name;
 }
 
-void Conversation::setOriginId(long originId)
+void Group::setName(std::string name)
 {
-    this->originId = originId;
+    this->name = name;
 }
 
-long Conversation::getTargetId()
+std::string Group::getGroupPic()
 {
-    return targetId;
+    return groupPic;
 }
 
-void Conversation::setTargetId(long targetId)
+void Group::setGroupPic(std::string groupPic)
 {
-    this->targetId = targetId;
+    this->groupPic = groupPic;
 }
 
-bool Conversation::isArchived()
+bool Group::isArchived()
 {
     return archived;
 }
 
-void Conversation::setArchived(bool archived)
+void Group::setArchived(bool archived)
 {
     this->archived = archived;
 }
 
-time_t Conversation::getLastMessageDate()
+std::vector<Contact *> Group::getMembers()
 {
-    return lastMessageDate;
+    return members;
 }
 
-void Conversation::setLastMessageDate(time_t date)
+void Group::insertNewMember(Contact *contact)
 {
-    this->lastMessageDate = date;
+    members.push_back(contact);
+}
+
+void Group::deleteMember(Contact *contact)
+{
+    members.erase(
+        std::remove(members.begin(), members.end(), contact),
+        members.end()
+    );
 }
