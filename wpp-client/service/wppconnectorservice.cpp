@@ -12,6 +12,23 @@ WppConnectorService::WppConnectorService() {}
 
 WppConnectorService::~WppConnectorService() {}
 
+WppConnectorService *WppConnectorService::getInstance()
+{
+    if(INSTANCE == nullptr){
+        INSTANCE = new WppConnectorService();
+    }
+
+    return INSTANCE;
+}
+
+void WppConnectorService::killInstance()
+{
+    if(INSTANCE != nullptr){
+        INSTANCE->kill();
+        delete INSTANCE;
+    }
+}
+
 
 void WppConnectorService::startWppCommunication()
 {
@@ -34,12 +51,14 @@ void WppConnectorService::startWppCommunication()
 
 void WppConnectorService::kill()
 {
-    this->alive = false;
-    for(std::thread& thread : this->threads){
-        thread.join();
-    }
+    if(alive){
+        alive = false;
+        for(std::thread& thread : this->threads){
+            thread.join();
+        }
 
-    close(sock);
+        close(sock);
+    }
 }
 
 void WppConnectorService::readWpp()

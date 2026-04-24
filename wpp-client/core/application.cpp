@@ -16,7 +16,7 @@
 Application::Application()
 {
     SignalManager::registerRuningCv(&this->cv);
-    this->service = new WppConnectorService();
+    this->service = WppConnectorService::getInstance();
 }
 
 Application::~Application()
@@ -24,7 +24,7 @@ Application::~Application()
     for (const auto& [key, value] : views) {
         delete value;
     }
-    delete service;
+    WppConnectorService::killInstance();
 }
 
 void Application::run()

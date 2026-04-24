@@ -12,6 +12,11 @@ using json = nlohmann::json;
 class WppConnectorService : public Observable
 {
 private:
+    inline static WppConnectorService* INSTANCE;
+
+    WppConnectorService();
+    ~WppConnectorService();
+
     volatile bool alive = true;
     std::vector<std::thread> threads;
     int sock;
@@ -19,8 +24,8 @@ private:
     void readWpp();
     void printQR(const std::string& text);
 public:
-    WppConnectorService();
-    ~WppConnectorService();
+    static WppConnectorService* getInstance();
+    static void killInstance();
 
     void startWppCommunication();
     void kill();
