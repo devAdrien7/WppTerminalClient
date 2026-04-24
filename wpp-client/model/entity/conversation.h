@@ -1,21 +1,24 @@
-#ifndef GROUP_H
-#define GROUP_H
+#ifndef CONVERSATION_H
+#define CONVERSATION_H
 
 #include "Entity.h"
 #include "contact.h"
 
 
-class Group : public Entity
+class Conversation : public Entity
 {
 private:
     std::string id;
     std::string name;
     std::string groupPic;
     bool archived;
+    bool group;
     std::vector<Contact*> members;
 public:
-    Group();
-    ~Group();
+    Conversation();
+    Conversation(std::string id, bool archived, bool group, std::vector<Contact*> members);
+    Conversation(std::string id, std::string name, std::string groupPic, bool archived, bool group, std::vector<Contact*> members);
+    ~Conversation();
 
     std::string getTableName() override;
     std::string getPrimaryKey() override;
@@ -36,9 +39,12 @@ public:
     bool isArchived();
     void setArchived(bool archived);
 
+    bool isGroup();
+    void setIsGroup(bool isGroup);
+
     std::vector<Contact*> getMembers();
     void insertNewMember(Contact* contact);
     void deleteMember(Contact* contact);
 };
 
-#endif // GROUP_H
+#endif // CONVERSATION_H

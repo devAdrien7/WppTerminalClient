@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include <nlohmann/json.hpp>
+#include <unordered_map>
 
 #ifndef WPPCONNECTORSERVICE_H
 #define WPPCONNECTORSERVICE_H
@@ -17,12 +18,15 @@ private:
     WppConnectorService();
     ~WppConnectorService();
 
+    std::unordered_map<std::string, std::function<void(const json&)>> commands;
+
     volatile bool alive = true;
     std::vector<std::thread> threads;
     int sock;
 
     void readWpp();
     void printQR(const std::string& text);
+    void registerCommands();
 public:
     static WppConnectorService* getInstance();
     static void killInstance();

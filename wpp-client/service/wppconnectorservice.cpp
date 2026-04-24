@@ -1,5 +1,7 @@
 #include "wppconnectorservice.h"
 #include "../util/OBSERVABLE_COMMAND.h"
+#include "../model/entity/conversation.h"
+#include "../model/entity/contact.h"
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/types.h>
@@ -32,6 +34,7 @@ void WppConnectorService::killInstance()
 
 void WppConnectorService::startWppCommunication()
 {
+    registerCommands();
     this->sock = socket(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK, 0);
 
     sockaddr_un addr{};
@@ -79,20 +82,13 @@ void WppConnectorService::readWpp()
                 std::string message = buffer.substr(0, pos);
                 buffer.erase(0, pos + 1);
 
-                //std::cout << "Received: " << message << std::endl;
-
                 try {
                     json j = json::parse(message);
-
                     std::string type = j.at("type");
 
-                    if (type == "qr") {
-                        printQR(j.at("data"));
-                    }
-                    else if (type == "login") {
-                        if (j.at("data") == "SUCCESS") {
-                            notify(OBSERVABLE_COMMAND::LOGIN_SUCCESS, "");
-                        }
+                    auto command = commands.find(type);
+                    if(command != commands.end()){
+                        command->second(j);
                     }
 
                 } catch (const std::exception& e) {
@@ -131,22 +127,11 @@ void WppConnectorService::printQR(const std::string& text) {
             bool t = top & 1;
             bool b = bottom & 1;
 
-            //if (t && b) printw("█");
-            //else if (t) printw("▀");
-            //else if (b) printw("▄");
-            //else printw(" ");
-
             if (t && b) qrCode.append("█");
             else if (t) qrCode.append("▀");
             else if (b) qrCode.append("▄");
             else qrCode.append(" ");
-
-            //if (t && b) std::cout << "█";
-            //else if (t) std::cout << "▀";
-            //else if (b) std::cout << "▄";
-            //else std::cout << " ";
         }
-        //std::cout << "\n";
         qrCode.append("\n");
     }
     //mvaddstr(4, 0, qrCode.c_str());
@@ -155,6 +140,41 @@ void WppConnectorService::printQR(const std::string& text) {
     notify(OBSERVABLE_COMMAND::SHOW_QR, qrCode);
 
     QRcode_free(qr);
+}
+
+void WppConnectorService::registerCommands()
+{
+    commands["qr"] = [this](json arg){
+        printQR(arg.at("data"));
+    };
+
+    commands["login"] = [this](json arg){
+        if (arg.at("data") == "SUCCESS") {
+            notify(OBSERVABLE_COMMAND::LOGIN_SUCCESS, "");
+        }
+    };
+
+    commands["chats"] = [this](json arg){
+        std::vector<Conversation*> conversations;
+
+        for(json& chat : arg.at("data")){
+            std::vector<Contact*> conversationMembers;
+
+            std::string chatId = chat.at("id").get<std::string>();
+            bool isArchived = chat.at("isArchived").get<bool>();
+            std::vector<std::string> members = chat.at("participants").get<std::vector<std::string>>();
+            bool isGroup = chat.at("isGroup").get<bool>();
+
+            for(auto & member : members){
+                conversationMembers.push_back(new Contact(member));
+            }
+
+            conversations.push_back(new Conversation(chatId, isArchived, isGroup, conversationMembers));
+        }
+
+        notify(OBSERVABLE_COMMAND::CHAT_RECEIVED, conversations);
+    };
+
 }
 
 void WppConnectorService::sendCommand(const std::string& command)

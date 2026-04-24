@@ -1,108 +1,132 @@
-#include "group.h"
+#include "conversation.h"
 #include "../../util/utilalghoritms.h"
 #include <algorithm>
 
-Group::Group() {}
+Conversation::Conversation()
+    : Conversation("", "", "", false, false, {})
+{}
 
-Group::~Group() {}
+Conversation::Conversation(std::string id, bool archived, bool group, std::vector<Contact *> members)
+    : Conversation(id, "", "", archived, group, members)
+{}
 
-std::string Group::getTableName()
+Conversation::Conversation(std::string id, std::string name, std::string groupPic, bool archived, bool group, std::vector<Contact *> members)
+    : id(id), name(name), groupPic(groupPic), archived(archived), group(group), members(members)
+{}
+
+Conversation::~Conversation() {}
+
+std::string Conversation::getTableName()
 {
-    return "groups";
+    return "conversations";
 }
 
-std::string Group::getPrimaryKey()
+std::string Conversation::getPrimaryKey()
 {
     return id;
 }
 
-void Group::setPrimaryKey(std::string id)
+void Conversation::setPrimaryKey(std::string id)
 {
     this->id = id;
 }
 
-PRIMARY_KEY_TYPE Group::getPrimaryKeyType()
+PRIMARY_KEY_TYPE Conversation::getPrimaryKeyType()
 {
     return PRIMARY_KEY_TYPE::INSERTED;
 }
 
-std::vector<std::string> Group::getAttributes()
+std::vector<std::string> Conversation::getAttributes()
 {
-    return { "id", "name", "group_pic", "archived" };
+    return { "id", "name", "group_pic", "archived", "group" };
 }
 
-std::vector<std::string> Group::getAttributesWithoutId()
+std::vector<std::string> Conversation::getAttributesWithoutId()
 {
-    return { "name", "group_pic", "archived" };
+    return { "name", "group_pic", "archived", "group" };
 }
 
-std::map<std::string, std::string> Group::getAttributesAndValues()
+std::map<std::string, std::string> Conversation::getAttributesAndValues()
 {
     return {
         {"id", id},
         {"name", name},
         {"group_pic", groupPic},
         {"archived", UtilAlghoritms::boolToString(archived)},
+        {"group", UtilAlghoritms::boolToString(group)}
     };
 }
 
-std::map<std::string, std::string> Group::getAttributesAndValuesWithoutId()
+std::map<std::string, std::string> Conversation::getAttributesAndValuesWithoutId()
 {
     return {
         {"name", name},
         {"group_pic", groupPic},
         {"archived", UtilAlghoritms::boolToString(archived)},
+        {"group", UtilAlghoritms::boolToString(group)}
     };
 }
 
-void Group::fillAttributes(const std::map<std::string, std::string> &sqlValues)
+void Conversation::fillAttributes(const std::map<std::string, std::string> &sqlValues)
 {
     setPrimaryKey(sqlValues.at("id"));
     name = sqlValues.at("name");
     groupPic = sqlValues.at("group_pic");
+    archived = UtilAlghoritms::stringToBoolean(sqlValues.at("archived"));
+    group = UtilAlghoritms::stringToBoolean(sqlValues.at("group"));
 }
 
-std::string Group::getName()
+std::string Conversation::getName()
 {
     return name;
 }
 
-void Group::setName(std::string name)
+void Conversation::setName(std::string name)
 {
     this->name = name;
 }
 
-std::string Group::getGroupPic()
+std::string Conversation::getGroupPic()
 {
     return groupPic;
 }
 
-void Group::setGroupPic(std::string groupPic)
+void Conversation::setGroupPic(std::string groupPic)
 {
     this->groupPic = groupPic;
 }
 
-bool Group::isArchived()
+bool Conversation::isArchived()
 {
     return archived;
 }
 
-void Group::setArchived(bool archived)
+void Conversation::setArchived(bool archived)
 {
     this->archived = archived;
 }
 
-std::vector<Contact *> Group::getMembers()
+bool Conversation::isGroup()
+{
+    return group;
+}
+
+void Conversation::setIsGroup(bool isGroup)
+{
+    this->group = isGroup;
+}
+
+std::vector<Contact *> Conversation::getMembers()
 {
     return members;
 }
 
-void Group::insertNewMember(Contact *contact)
+void Conversation::insertNewMember(Contact *contact)
 {
     members.push_back(contact);
 }
 
-void Group::deleteMember(Contact *contact)
+void Conversation::deleteMember(Contact *contact)
 {
     members.erase(
         std::remove(members.begin(), members.end(), contact),

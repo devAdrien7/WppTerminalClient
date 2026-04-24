@@ -11,6 +11,8 @@ private:
     std::string profilePic;
 public:
     Contact();
+    Contact(std::string id);
+    Contact(std::string id, std::string name, std::string profilePic);
     ~Contact();
 
     std::string getTableName() override;

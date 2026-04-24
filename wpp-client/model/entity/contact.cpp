@@ -1,6 +1,16 @@
 #include "contact.h"
 
-Contact::Contact() {}
+Contact::Contact()
+    : Contact("", "", "")
+{}
+
+Contact::Contact(std::string id)
+    : Contact(id, "", "")
+{}
+
+Contact::Contact(std::string id, std::string name, std::string profilePic)
+    : id(id), name(name), profilePic(profilePic)
+{}
 
 Contact::~Contact() {}
 
