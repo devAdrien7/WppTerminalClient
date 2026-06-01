@@ -8,6 +8,10 @@ Contact::Contact(std::string id)
     : Contact(id, "", "")
 {}
 
+Contact::Contact(std::string id, std::string name)
+    : Contact(id, name, "")
+{}
+
 Contact::Contact(std::string id, std::string name, std::string profilePic)
     : id(id), name(name), profilePic(profilePic)
 {}

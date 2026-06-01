@@ -156,36 +156,66 @@ async function startWpp(conn) {
 
     for (const message of messages) {
       if (!message.message) continue;
-      
+
       const key = message.key;
+      const msgContent = message.message;
       
       const chatId = key.remoteJid || '';
-      let senderId = key.participant || key.remoteJid || '';
+      const senderId = key.participant || key.remoteJid || '';
+
+      let type = 'HIDDEN';
+      let content = '';
+
+      const actualMsg = msgContent.ephemeralMessage?.message || 
+                        msgContent.viewOnceMessage?.message || 
+                        msgContent.viewOnceMessageV2?.message || 
+                        msgContent;
+
+      const msgKeys = Object.keys(actualMsg)
+      if (msgKeys.includes('conversation')) {
+        type = 'TEXT';
+        content = actualMsg.conversation;
+      } else if (msgKeys.includes('extendedTextMessage')) {
+        type = 'TEXT';
+        content = actualMsg.extendedTextMessage.text;
+      } else if (msgKeys.includes('imageMessage')) {
+        type = 'IMAGE';
+        content = actualMsg.imageMessage.caption || '';
+      } else if (msgKeys.includes('videoMessage')) {
+        type = 'VIDEO';
+        content = actualMsg.videoMessage.caption || '';
+      } else if (msgKeys.includes('audioMessage')) {
+        type = 'AUDIO';
+        content = '';
+      } else if (msgKeys.includes('stickerMessage')) {
+        type = 'STICKER';
+        content = '';
+      }
 
       messagesSerialized.push({
         id: message.key?.id || '',
+        fromMe: key.fromMe || false,
         contactId: senderId,
         conversationId: chatId,
-        read: message.status === 4,
-        message:
-          message.message?.conversation ||
-          message.message?.extendedTextMessage?.text ||
-          '',
+        read: message.status === 4 || message.status === 'READ',
+        messageType: type,
+        message: content,
         messageTimestamp: message.messageTimestamp
-      })
+      });
     }
 
     for (const contact of contacts) {
+      const chosenName = contact.name || contact.verifiedName || contact.notify || ''
+
       contactsSerialized.push({
         id: contact.id,
-        name: contact.name,
-        phone: contact.phoneNumber
-      })
+        name: chosenName
+      });
     }
 
-    sendToCpp({ type: 'chats', data: chatsSerialized })
-    sendToCpp({ type: 'historic_messages', data: messagesSerialized })
-    sendToCpp({ type: 'contacts', data: contactsSerialized })
+    sendToCpp({ type: 'chats', data: chatsSerialized });
+    sendToCpp({ type: 'historic_messages', data: messagesSerialized });
+    sendToCpp({ type: 'contacts', data: contactsSerialized });
   })
 }
 

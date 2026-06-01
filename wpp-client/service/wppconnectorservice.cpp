@@ -181,14 +181,23 @@ void WppConnectorService::registerCommands()
 
         for(json& historicMessage : arg.at("data")){
             std::string id = historicMessage.at("id").get<std::string>();
-            MESSAGE_TYPE type = MESSAGE_TYPE::TEXT;
+
+            std::string typeJson = historicMessage.at("type").get<std::string>();
+            MESSAGE_TYPE type = getStringToMessageType().at(typeJson);
+
             std::string messageText = historicMessage.at("message").get<std::string>();
-            std::string messageAudioVisual;
+
+            if(type == MESSAGE_TYPE::VIDEO && !messageText.empty())
+                type = MESSAGE_TYPE::TEXT_AND_VIDEO;
+            else if(type == MESSAGE_TYPE::IMAGE && !messageText.empty())
+                type = MESSAGE_TYPE::TEXT_AND_IMAGE;
+
+            std::string messageAudioVisual = "";
             time_t date = historicMessage.at("messageTimestamp").get<time_t>();
-            bool read; //preciso colher no js
-            bool authority; //preciso comparar com o contactId
+            bool read = historicMessage.at("read").get<bool>();
+            bool authority = historicMessage.at("fromMe").get<bool>();
             std::string contactId = historicMessage.at("contactId").get<std::string>();
-            std::string conversationId; //preciso colher do js
+            std::string conversationId = historicMessage.at("conversationId").get<std::string>();
 
             Message* message = new Message(id, type, messageText, messageAudioVisual, date, read, authority, contactId, conversationId);
             historicMessages.push_back(message);
@@ -198,7 +207,17 @@ void WppConnectorService::registerCommands()
     };
 
     commands["contacts"] = [this](json arg){
+        std::vector<Contact*> contacts;
 
+        for(json& contact: arg.at("data")){
+            std::string id = contact.at("id").get<std::string>();
+            std::string name = contact.at("name").get<std::string>();
+
+            Contact* contactEntity = new Contact(id, name);
+            contacts.push_back(contactEntity);
+        }
+
+        notify(OBSERVABLE_COMMAND::CONTACT_RECEIVED, contacts);
     };
 
 }

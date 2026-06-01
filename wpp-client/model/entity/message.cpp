@@ -82,7 +82,7 @@ std::map<std::string, std::string> Message::getAttributesAndValuesWithoutId()
 void Message::fillAttributes(const std::map<std::string, std::string> &sqlValues)
 {
     id = sqlValues.at("id");
-    type = stringToMessageType.at(sqlValues.at("type"));
+    type = getStringToMessageType().at(sqlValues.at("type"));
     messageText = sqlValues.at("message_text");
     messageAudioVisual = sqlValues.at("message_audio_visual");
     date = static_cast<time_t>(std::stol(sqlValues.at("date")));
