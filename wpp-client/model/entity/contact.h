@@ -12,6 +12,7 @@ private:
 public:
     Contact();
     Contact(std::string id);
+    Contact(std::string id, std::string name);
     Contact(std::string id, std::string name, std::string profilePic);
     ~Contact();
 
