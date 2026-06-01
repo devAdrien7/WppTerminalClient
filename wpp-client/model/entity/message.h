@@ -15,10 +15,11 @@ private:
     time_t date;
     bool read;
     bool authority;
-    long contactId;
-    long conversationId;
+    std::string contactId;
+    std::string conversationId;
 public:
     Message();
+    Message(std::string id, MESSAGE_TYPE type, std::string messageText, std::string messageAudioVisual, time_t date, bool read, bool authority, std::string contactId, std::string conversationId);
     ~Message();
 
     std::string getTableName() override;
@@ -49,10 +50,10 @@ public:
     bool isAuthority();
     void setIsAuthority(bool isAuthority);
 
-    long getContactId();
+    std::string getContactId();
     void setContactId(long contactId);
 
-    long getConversationId();
+    std::string getConversationId();
     void setConversationId(long conversationId);
 };
 

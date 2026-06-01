@@ -2,6 +2,7 @@
 #include "../util/OBSERVABLE_COMMAND.h"
 #include "../model/entity/conversation.h"
 #include "../model/entity/contact.h"
+#include "../model/entity/message.h"
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/types.h>
@@ -173,6 +174,31 @@ void WppConnectorService::registerCommands()
         }
 
         notify(OBSERVABLE_COMMAND::CHAT_RECEIVED, conversations);
+    };
+
+    commands["historic_messages"] = [this](json arg){
+        std::vector<Message*> historicMessages;
+
+        for(json& historicMessage : arg.at("data")){
+            std::string id = historicMessage.at("id").get<std::string>();
+            MESSAGE_TYPE type = MESSAGE_TYPE::TEXT;
+            std::string messageText = historicMessage.at("message").get<std::string>();
+            std::string messageAudioVisual;
+            time_t date = historicMessage.at("messageTimestamp").get<time_t>();
+            bool read; //preciso colher no js
+            bool authority; //preciso comparar com o contactId
+            std::string contactId = historicMessage.at("contactId").get<std::string>();
+            std::string conversationId; //preciso colher do js
+
+            Message* message = new Message(id, type, messageText, messageAudioVisual, date, read, authority, contactId, conversationId);
+            historicMessages.push_back(message);
+        }
+
+        notify(OBSERVABLE_COMMAND::HISTORICAL_MESSAGE_RECEIVED, historicMessages);
+    };
+
+    commands["contacts"] = [this](json arg){
+
     };
 
 }

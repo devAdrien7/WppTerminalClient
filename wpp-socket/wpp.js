@@ -155,13 +155,23 @@ async function startWpp(conn) {
     }
 
     for (const message of messages) {
+      if (!message.message) continue;
+      
+      const key = message.key;
+      
+      const chatId = key.remoteJid || '';
+      let senderId = key.participant || key.remoteJid || '';
+
       messagesSerialized.push({
         id: message.key?.id || '',
-        contactId: message.key?.remoteJid || '',
+        contactId: senderId,
+        conversationId: chatId,
+        read: message.status === 4,
         message:
           message.message?.conversation ||
           message.message?.extendedTextMessage?.text ||
-          ''
+          '',
+        messageTimestamp: message.messageTimestamp
       })
     }
 

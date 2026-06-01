@@ -1,8 +1,22 @@
 #include "message.h"
 #include "../../util/utilalghoritms.h"
-#include <stdexcept>
 
-Message::Message() {}
+Message::Message()
+    : Message("", MESSAGE_TYPE::TEXT, "", "", 0, false, false, "", "")
+{}
+
+Message::Message(std::string id, MESSAGE_TYPE type, std::string messageText, std::string messageAudioVisual, time_t date, bool read, bool authority, std::string contactId, std::string conversationId)
+{
+    this->id = id;
+    this->type = type;
+    this->messageText = messageText;
+    this->messageAudioVisual = messageAudioVisual;
+    this->date = date;
+    this->read = read;
+    this->authority = authority;
+    this->contactId = contactId;
+    this->conversationId = conversationId;
+}
 
 Message::~Message() {}
 
@@ -46,8 +60,8 @@ std::map<std::string, std::string> Message::getAttributesAndValues()
         {"date", std::to_string(date)},
         {"read", UtilAlghoritms::boolToString(read)},
         {"authority", UtilAlghoritms::boolToString(authority)},
-        {"contact_id", std::to_string(contactId)},
-        {"conversation_id", std::to_string(conversationId)}
+        {"contact_id", contactId},
+        {"conversation_id", conversationId}
     };
 }
 
@@ -60,8 +74,8 @@ std::map<std::string, std::string> Message::getAttributesAndValuesWithoutId()
         {"date", std::to_string(date)},
         {"read", UtilAlghoritms::boolToString(read)},
         {"authority", UtilAlghoritms::boolToString(authority)},
-        {"contact_id", std::to_string(contactId)},
-        {"conversation_id", std::to_string(conversationId)}
+        {"contact_id", contactId},
+        {"conversation_id", conversationId}
     };
 }
 
@@ -74,14 +88,8 @@ void Message::fillAttributes(const std::map<std::string, std::string> &sqlValues
     date = static_cast<time_t>(std::stol(sqlValues.at("date")));
     read = UtilAlghoritms::stringToBoolean(sqlValues.at("read"));
     authority = UtilAlghoritms::stringToBoolean(sqlValues.at("authority"));
-
-    if(!UtilAlghoritms::isLong(sqlValues.at("contact_id"), contactId)){
-        std::runtime_error("contactId needs to be long");
-    }
-
-    if(!UtilAlghoritms::isLong(sqlValues.at("conversation_id"), conversationId)){
-        std::runtime_error("conversationId needs to be long");
-    }
+    contactId = sqlValues.at("contact_id");
+    conversationId = sqlValues.at("conversation_id");
 }
 
 MESSAGE_TYPE Message::getType()
@@ -141,10 +149,10 @@ bool Message::isAuthority()
 
 void Message::setIsAuthority(bool isAuthority)
 {
-    this->authority = authority;
+    this->authority = isAuthority;
 }
 
-long Message::getContactId()
+std::string Message::getContactId()
 {
     return contactId;
 }
@@ -154,7 +162,7 @@ void Message::setContactId(long contactId)
     this->contactId = contactId;
 }
 
-long Message::getConversationId()
+std::string Message::getConversationId()
 {
     return conversationId;
 }
